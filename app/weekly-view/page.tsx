@@ -1,15 +1,17 @@
 "use client";
-import { useState, useEffect, useMemo } from 'react';
-import { fetchMarketingData } from '../../src/lib/api';
-import { MarketingData, Campaign } from '../../src/types/marketing';
-import { Navbar } from '../../src/components/ui/navbar';
-import { Footer } from '../../src/components/ui/footer';
-import { CardMetric } from '../../src/components/ui/card-metric';
-import { LineChart } from '../../src/components/ui/line-chart';
-import { Calendar, TrendingUp, DollarSign, Target, Users } from 'lucide-react';
+import { useState, useEffect, useMemo } from "react";
+import { fetchMarketingData } from "../../src/lib/api";
+import { MarketingData, Campaign } from "../../src/types/marketing";
+import { Navbar } from "../../src/components/ui/navbar";
+import { Footer } from "../../src/components/ui/footer";
+import { CardMetric } from "../../src/components/ui/card-metric";
+import { LineChart } from "../../src/components/ui/line-chart";
+import { Calendar, TrendingUp, DollarSign, Target, Users } from "lucide-react";
 
 export default function WeeklyView() {
-  const [marketingData, setMarketingData] = useState<MarketingData | null>(null);
+  const [marketingData, setMarketingData] = useState<MarketingData | null>(
+    null
+  );
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -20,8 +22,8 @@ export default function WeeklyView() {
         const data = await fetchMarketingData();
         setMarketingData(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load data');
-        console.error('Error loading marketing data:', err);
+        setError(err instanceof Error ? err.message : "Failed to load data");
+        console.error("Error loading marketing data:", err);
       } finally {
         setLoading(false);
       }
@@ -38,13 +40,13 @@ export default function WeeklyView() {
     const weeklySpend: { [key: string]: number } = {};
 
     // Aggregate data from all campaigns
-    marketingData.campaigns.forEach(campaign => {
-      campaign.weekly_performance?.forEach(week => {
+    marketingData.campaigns.forEach((campaign) => {
+      campaign.weekly_performance?.forEach((week) => {
         const weekKey = week.week_start;
-        
+
         if (!weeklyRevenue[weekKey]) weeklyRevenue[weekKey] = 0;
         if (!weeklySpend[weekKey]) weeklySpend[weekKey] = 0;
-        
+
         weeklyRevenue[weekKey] += week.revenue;
         weeklySpend[weekKey] += week.spend;
       });
@@ -52,17 +54,23 @@ export default function WeeklyView() {
 
     // Convert to arrays and sort by date
     const sortedWeeks = Object.keys(weeklyRevenue).sort();
-    
-    const revenueData = sortedWeeks.map(week => ({
-      label: new Date(week).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+
+    const revenueData = sortedWeeks.map((week) => ({
+      label: new Date(week).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      }),
       value: weeklyRevenue[week],
-      color: '#10B981'
+      color: "#10B981",
     }));
 
-    const spendData = sortedWeeks.map(week => ({
-      label: new Date(week).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    const spendData = sortedWeeks.map((week) => ({
+      label: new Date(week).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      }),
       value: weeklySpend[week],
-      color: '#EF4444'
+      color: "#EF4444",
     }));
 
     return { revenue: revenueData, spend: spendData };
@@ -72,8 +80,14 @@ export default function WeeklyView() {
   const weeklyMetrics = useMemo(() => {
     if (!weeklyData.revenue.length) return null;
 
-    const totalRevenue = weeklyData.revenue.reduce((sum, week) => sum + week.value, 0);
-    const totalSpend = weeklyData.spend.reduce((sum, week) => sum + week.value, 0);
+    const totalRevenue = weeklyData.revenue.reduce(
+      (sum, week) => sum + week.value,
+      0
+    );
+    const totalSpend = weeklyData.spend.reduce(
+      (sum, week) => sum + week.value,
+      0
+    );
     const averageROAS = totalSpend > 0 ? totalRevenue / totalSpend : 0;
     const weekCount = weeklyData.revenue.length;
 
@@ -83,7 +97,7 @@ export default function WeeklyView() {
       averageROAS,
       weekCount,
       averageWeeklyRevenue: totalRevenue / weekCount,
-      averageWeeklySpend: totalSpend / weekCount
+      averageWeeklySpend: totalSpend / weekCount,
     };
   }, [weeklyData]);
 
@@ -99,9 +113,13 @@ export default function WeeklyView() {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-900">
+    <div className="flex flex-col lg:flex-row h-screen bg-gray-900">
+      {/*
+      - Old styling, // reason why content overflow wasnt working
+        flex flex-col lg:flex-row min-h-screen bg-gray-900
+      */}
       <Navbar />
-      
+
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col transition-all duration-300 ease-in-out overflow-hidden">
         {/* Hero Section */}
@@ -129,25 +147,29 @@ export default function WeeklyView() {
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
                 <CardMetric
                   title="Total Revenue"
-                  value={`$${Math.round(weeklyMetrics.totalRevenue).toLocaleString()}`}
+                  value={`$${Math.round(
+                    weeklyMetrics.totalRevenue
+                  ).toLocaleString()}`}
                   icon={<DollarSign className="h-5 w-5" />}
                   className="text-green-400"
                 />
-                
+
                 <CardMetric
                   title="Total Spend"
-                  value={`$${Math.round(weeklyMetrics.totalSpend).toLocaleString()}`}
+                  value={`$${Math.round(
+                    weeklyMetrics.totalSpend
+                  ).toLocaleString()}`}
                   icon={<TrendingUp className="h-5 w-5" />}
                   className="text-blue-400"
                 />
-                
+
                 <CardMetric
                   title="Average ROAS"
                   value={`${weeklyMetrics.averageROAS.toFixed(1)}x`}
                   icon={<Target className="h-5 w-5" />}
                   className="text-purple-400"
                 />
-                
+
                 <CardMetric
                   title="Weeks Tracked"
                   value={weeklyMetrics.weekCount}
@@ -161,14 +183,18 @@ export default function WeeklyView() {
                 <LineChart
                   title="Weekly Revenue Trend"
                   data={weeklyData.revenue}
-                  formatValue={(value) => `$${Math.round(value).toLocaleString()}`}
+                  formatValue={(value) =>
+                    `$${Math.round(value).toLocaleString()}`
+                  }
                   height={350}
                 />
 
                 <LineChart
                   title="Weekly Spend Trend"
                   data={weeklyData.spend}
-                  formatValue={(value) => `$${Math.round(value).toLocaleString()}`}
+                  formatValue={(value) =>
+                    `$${Math.round(value).toLocaleString()}`
+                  }
                   height={350}
                 />
               </div>
@@ -177,14 +203,18 @@ export default function WeeklyView() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
                 <CardMetric
                   title="Average Weekly Revenue"
-                  value={`$${Math.round(weeklyMetrics.averageWeeklyRevenue).toLocaleString()}`}
+                  value={`$${Math.round(
+                    weeklyMetrics.averageWeeklyRevenue
+                  ).toLocaleString()}`}
                   icon={<DollarSign className="h-5 w-5" />}
                   className="text-green-400"
                 />
-                
+
                 <CardMetric
                   title="Average Weekly Spend"
-                  value={`$${Math.round(weeklyMetrics.averageWeeklySpend).toLocaleString()}`}
+                  value={`$${Math.round(
+                    weeklyMetrics.averageWeeklySpend
+                  ).toLocaleString()}`}
                   icon={<TrendingUp className="h-5 w-5" />}
                   className="text-blue-400"
                 />
@@ -199,33 +229,46 @@ export default function WeeklyView() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-300">
                   <div>
                     <p className="mb-2">
-                      <span className="font-semibold text-green-400">Revenue Peak:</span>{' '}
-                      {weeklyData.revenue.length > 0 ? 
-                        `$${Math.round(Math.max(...weeklyData.revenue.map(w => w.value))).toLocaleString()}` 
-                        : 'N/A'
-                      }
+                      <span className="font-semibold text-green-400">
+                        Revenue Peak:
+                      </span>{" "}
+                      {weeklyData.revenue.length > 0
+                        ? `$${Math.round(
+                            Math.max(...weeklyData.revenue.map((w) => w.value))
+                          ).toLocaleString()}`
+                        : "N/A"}
                     </p>
                     <p className="mb-2">
-                      <span className="font-semibold text-blue-400">Spend Peak:</span>{' '}
-                      {weeklyData.spend.length > 0 ? 
-                        `$${Math.round(Math.max(...weeklyData.spend.map(w => w.value))).toLocaleString()}` 
-                        : 'N/A'
-                      }
+                      <span className="font-semibold text-blue-400">
+                        Spend Peak:
+                      </span>{" "}
+                      {weeklyData.spend.length > 0
+                        ? `$${Math.round(
+                            Math.max(...weeklyData.spend.map((w) => w.value))
+                          ).toLocaleString()}`
+                        : "N/A"}
                     </p>
                   </div>
                   <div>
                     <p className="mb-2">
-                      <span className="font-semibold text-purple-400">Data Period:</span>{' '}
-                      {weeklyData.revenue.length > 0 ? 
-                        `${weeklyData.revenue.length} weeks` 
-                        : 'N/A'
-                      }
+                      <span className="font-semibold text-purple-400">
+                        Data Period:
+                      </span>{" "}
+                      {weeklyData.revenue.length > 0
+                        ? `${weeklyData.revenue.length} weeks`
+                        : "N/A"}
                     </p>
                     <p className="mb-2">
-                      <span className="font-semibold text-yellow-400">Efficiency:</span>{' '}
-                      {weeklyMetrics.averageROAS > 10 ? 'Excellent' : 
-                       weeklyMetrics.averageROAS > 5 ? 'Good' : 
-                       weeklyMetrics.averageROAS > 2 ? 'Average' : 'Needs Improvement'}
+                      <span className="font-semibold text-yellow-400">
+                        Efficiency:
+                      </span>{" "}
+                      {weeklyMetrics.averageROAS > 10
+                        ? "Excellent"
+                        : weeklyMetrics.averageROAS > 5
+                        ? "Good"
+                        : weeklyMetrics.averageROAS > 2
+                        ? "Average"
+                        : "Needs Improvement"}
                     </p>
                   </div>
                 </div>
@@ -233,7 +276,7 @@ export default function WeeklyView() {
             </>
           )}
         </div>
-        
+
         <Footer />
       </div>
     </div>
